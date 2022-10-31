@@ -35,8 +35,6 @@ async function busca() {
 
     index_para_deletar = await index_removiveis(result, nome_repositorio, arquivado)
 
-    console.log(result)
-
     if(index_para_deletar.length !== 0){
       for(const i of index_para_deletar){
         delete result[i];
@@ -54,8 +52,6 @@ async function busca() {
     const result = await response.json()
 
     index_para_deletar = await index_removiveis(result, nome_repositorio, arquivado)
-
-    console.log(index_para_deletar)
 
     if(index_para_deletar.length !== 0){
       for(const i of index_para_deletar){
