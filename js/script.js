@@ -27,8 +27,6 @@ async function busca() {
   var ordem = document.querySelector('input[name="ordem"]:checked').value;
   var index_para_deletar = []
 
-  console.log(typeof(arquivado))
-
   if(ordem == 'alf'){
 
     const url = "https://api.github.com/users/JoseLucasQ/repos"
