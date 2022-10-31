@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Desafio Estagio</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <br />
+
+        <br />
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Nome repositorio" id="Nome">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" onclick="busca()">Pesquisar</button>
+          </div>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" id="alf" name="ordem" value="alf" checked="checked"/>
+          <label class="form-check-label" for="inlineRadio1" name="ordem" id="ordem_alf" value="alf">Ordem Alfabetica</label>
+        </div>
+        
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" id="data" name="ordem" value="data"/>
+          <label class="form-check-label" for="inlineRadio2" name="ordem" value="data">Ordem Data de Commit</label>
+        </div>
+        
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" value="arquivado_true" id="arquivado" />
+          <label class="form-check-label" for="arquivado">Arquivado</label>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="table">
+                <thead>
+                    <tr>
+                        <th data-order="asc">Nome</th>
+                        <th>Ultima Atualização</th>
+                        <th>Arquivado</th>
+                        <th>Linguagem</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable"></tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+
+var request = new XMLHttpRequest()
+
+request.open('GET', 'https://api.github.com/users/JoseLucasQ/repos', true)
+
+request.onload = function () {
+  var data = JSON.parse(this.response);
+
+  var statusHTML = '';
+  $.each(data, function(i, status) {
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + status.name + '</td>';
+    statusHTML += '<td>' + status.updated_at.slice(8, 10) + '/' + status.updated_at.slice(5, 7) + '/' + status.updated_at.slice(0, 4) + '</td>';
+    statusHTML += '<td>' + status.archived + '</td>';
+    statusHTML += '<td>' + status.language + '</td>';
+    statusHTML += '</tr>';
+  });
+  $('tbody').html(statusHTML);
+}
+
+request.send();
+
+async function busca() {
+
+  var nome_repositorio = document.getElementById("Nome").value
+  var arquivado = document.getElementById("arquivado").checked
+  var parent = document.getElementById("table");
+  var ordem = document.querySelector('input[name="ordem"]:checked').value;
+  var index_para_deletar = []
+
+  if(ordem == 'alf'){
+
+    const url = "https://api.github.com/users/JoseLucasQ/repos"
+    const response = await fetch(url)
+    const result = await response.json()
+
+    index_para_deletar = await index_removiveis(result, nome_repositorio, arquivado)
+
+    console.log(result)
+
+    if(index_para_deletar.length !== 0){
+      for(const i of index_para_deletar){
+        delete result[i];
+      }
+    }
+
+    $("#table  tbody").remove();
+
+    dados_para_tabela(result, parent)
+
+  }else if(ordem == 'data'){
+
+    const url = "https://api.github.com/users/JoseLucasQ/repos?sort=updated"
+    const response = await fetch(url)
+    const result = await response.json()
+
+    index_para_deletar = await index_removiveis(result, nome_repositorio, arquivado)
+
+    console.log(index_para_deletar)
+
+    if(index_para_deletar.length !== 0){
+      for(const i of index_para_deletar){
+        delete result[i];
+      }
+    }
+    $("#table  tbody").remove();
+
+    dados_para_tabela(result, parent)
+  }
+}
+
+async function index_removiveis(obj, nome, arquivado){
+
+  var delete_index = []
+
+  for(const i of obj){
+      if(await (nome && !i.name.toLowerCase().includes(nome.toLowerCase())) || i.archived !== arquivado){
+        index = obj.findIndex(x => x.id === i.id);
+        delete_index.push(index);
+      }
+    }
+
+    return delete_index
+}
+
+function dados_para_tabela(obj, parent){
+  var statusHTML = '';
+  obj.forEach(i=>{
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + i.name + '</td>';
+    statusHTML += '<td>' + i.updated_at.slice(8, 10) + '/' + i.updated_at.slice(5, 7) + '/' + i.updated_at.slice(0, 4) + '</td>';
+    statusHTML += '<td>' + i.archived + '</td>';
+    statusHTML += '<td>' + i.language + '</td>';
+    statusHTML += '</tr>';
+  })
+
+  parent.innerHTML += statusHTML
+}
+
+/*async function ord_por_alfa() {
+
+  $("#table  tbody").remove();
+  var parent = document.getElementById("table");
+  
+  const url = "https://api.github.com/users/JoseLucasQ/repos"
+  const response = await fetch(url)
+  const result = await response.json()
+  
+  console.log(typeof(result))
+  console.log(result)
+  var statusHTML = '';
+
+  result.forEach(i=>{
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + i.id + '</td>';
+    statusHTML += '<td>' + i.name + '</td>';
+    statusHTML += '<td>' + i.html_url + '</td>';
+    statusHTML += '<td>' + i.language + '</td>';
+    statusHTML += '</tr>';
+  })
+
+
+  parent.innerHTML += statusHTML
+}
+
+async function ord_por_data() {
+  console.log("funcionou")
+
+  $("#table  tbody").remove();
+  var parent = document.getElementById("table");
+  
+  const url = "https://api.github.com/users/JoseLucasQ/repos?sort=updated"
+  const response = await fetch(url)
+  const result = await response.json()
+  
+  var statusHTML = '';
+
+  result.forEach(i=>{
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + i.id + '</td>';
+    statusHTML += '<td>' + i.name + '</td>';
+    statusHTML += '<td>' + i.html_url + '</td>';
+    statusHTML += '<td>' + i.language + '</td>';
+    statusHTML += '</tr>';
+  })
+
+
+  parent.innerHTML += statusHTML
+}
+
+async function arquivados() {
+  console.log("funcionou")
+
+  $("#table  tbody").remove();
+  var parent = document.getElementById("table");
+  
+  const url = "https://api.github.com/users/JoseLucasQ/repos?sort=updated"
+  const response = await fetch(url)
+  const result = await response.json()
+  
+  var statusHTML = '';
+
+  result.forEach(i=>{
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + i.id + '</td>';
+    statusHTML += '<td>' + i.name + '</td>';
+    statusHTML += '<td>' + i.html_url + '</td>';
+    statusHTML += '<td>' + i.language + '</td>';
+    statusHTML += '</tr>';
+  })
+
+
+  parent.innerHTML += statusHTML
+}*/
+
+/*$('#add_button').click(function() {
+
+    const url = "https://api.github.com/users/JoseLucasQ/repos"
+    const response =  fetch(url)
+    const result =  response
+
+    console.log(result)
+
+    return false;
+});*/
+
+
+</script>

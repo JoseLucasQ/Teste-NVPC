@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Desafio Estagio</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <br />
+
+        <br />
+        <!--<div align="right" style="margin-bottom:5px;">
+            <button type="button" name="add_button" onclick="ordPorData()" class="btn btn-success btn-xs">Ordenar Data do ultimo commit</button>
+            <button type="button" name="add_button" onclick="myFunction()" class="btn btn-success btn-xs">Ordenar Alfabeticamente</button>
+        </div>-->
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="basic-addon2">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button">Button</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" id="table">
+                <thead>
+                    <tr>
+                        <th data-order="asc">Nome</th>
+                        <th>Ultima Atualização</th>
+                        <th>Arquivado</th>
+                        <th>Linguagem</th>
+                    </tr>
+                </thead>
+                <tbody id="myTable"></tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+
+// Create a request variable and assign a new XMLHttpRequest object to it.
+var request = new XMLHttpRequest()
+
+// Open a new connection, using the GET request on the URL endpoint
+request.open('GET', 'https://api.github.com/users/JoseLucasQ/repos', true)
+
+request.onload = function () {
+  // Begin accessing JSON data here
+  var data = JSON.parse(this.response);
+
+  var statusHTML = '';
+  $.each(data, function(i, status) {
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + status.id + '</td>';
+    statusHTML += '<td>' + status.name + '</td>';
+    statusHTML += '<td>' + status.html_url + '</td>';
+    statusHTML += '<td>' + status.language + '</td>';
+    statusHTML += '</tr>';
+  });
+  $('tbody').html(statusHTML);
+}
+
+// Send request
+request.send();
+
+async function myFunction() {
+
+  $("#table  tbody").remove();
+  var parent = document.getElementById("table");
+
+  //parent.removeChild(child);
+  
+  const url = "https://api.github.com/users/JoseLucasQ/repos"
+  const response = await fetch(url)
+  const result = await response.json()
+  
+  var statusHTML = '';
+
+  result.forEach(i=>{
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + i.id + '</td>';
+    statusHTML += '<td>' + i.name + '</td>';
+    statusHTML += '<td>' + i.html_url + '</td>';
+    statusHTML += '<td>' + i.language + '</td>';
+    statusHTML += '</tr>';
+  })
+
+
+  parent.innerHTML += statusHTML
+}
+
+async function ordPorData() {
+  console.log("funcionou")
+
+  $("#table  tbody").remove();
+  var parent = document.getElementById("table");
+  
+  const url = "https://api.github.com/users/JoseLucasQ/repos?sort=updated"
+  const response = await fetch(url)
+  const result = await response.json()
+  
+  var statusHTML = '';
+
+  result.forEach(i=>{
+    statusHTML += '<tr>';
+    statusHTML += '<td>' + i.id + '</td>';
+    statusHTML += '<td>' + i.name + '</td>';
+    statusHTML += '<td>' + i.html_url + '</td>';
+    statusHTML += '<td>' + i.language + '</td>';
+    statusHTML += '</tr>';
+  })
+
+
+  parent.innerHTML += statusHTML
+}
+
+/*$('#add_button').click(function() {
+
+    const url = "https://api.github.com/users/JoseLucasQ/repos"
+    const response =  fetch(url)
+    const result =  response
+
+    console.log(result)
+
+    return false;
+});*/
+
+
+</script>
